@@ -3,9 +3,6 @@
  * ────────────────────────────────────────────────────────────────
  * Drop into src/pages/WelcomePage.tsx
  * Requires: Tailwind CSS, keycloak-js, axios (via useApi hook)
- * Fonts added via Google Fonts import in index.html or index.css:
- *   @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap');
- * ────────────────────────────────────────────────────────────────
  */
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -22,8 +19,15 @@ interface TechItem {
   tag: string;
 }
 
+// ✨ UPDATED: richer, but still simple payload
 interface SecurePayload {
   message: string;
+  server_time: string;
+  environment: string;
+  user_stats: {
+    request_id: string;
+    access_tier: string;
+  };
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -77,7 +81,6 @@ const TECH_STACK: TechItem[] = [
 
 // ─── Small reusable pieces ────────────────────────────────────────────────────
 
-/** Animated entrance wrapper — staggered by `delay` ms */
 function Reveal({
                   children,
                   delay = 0,
@@ -104,7 +107,6 @@ function Reveal({
   );
 }
 
-/** Pulsing live indicator dot */
 function LiveDot({ color = "bg-emerald-400" }: { color?: string }) {
   return (
       <span className="relative flex h-2.5 w-2.5">
@@ -116,7 +118,6 @@ function LiveDot({ color = "bg-emerald-400" }: { color?: string }) {
   );
 }
 
-/** Section label / eyebrow text */
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
       <p
@@ -142,7 +143,6 @@ function TechCard({ tech, index }: { tech: TechItem; index: number }) {
           ${tech.glow} hover:shadow-lg
         `}
         >
-          {/* Version tag */}
           <span
               className="absolute top-3 right-3 text-[9px] font-mono font-semibold text-slate-400
                      bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-full"
@@ -151,7 +151,6 @@ function TechCard({ tech, index }: { tech: TechItem; index: number }) {
           v{tech.tag}
         </span>
 
-          {/* Icon */}
           <div
               className="w-16 h-16 mb-4 flex items-center justify-center rounded-2xl
                      bg-slate-50 group-hover:bg-white transition-colors duration-300
@@ -201,7 +200,6 @@ function SecurePanel({
   if (loading) {
     return (
         <div className="flex flex-col items-center justify-center py-20 gap-5">
-          {/* Spinner */}
           <div className="relative w-12 h-12">
             <div className="absolute inset-0 rounded-full border-[3px] border-slate-100" />
             <div className="absolute inset-0 rounded-full border-[3px] border-indigo-500 border-t-transparent animate-spin" />
@@ -210,7 +208,7 @@ function SecurePanel({
               className="text-[11px] font-mono font-semibold uppercase tracking-[0.25em] text-slate-400 animate-pulse"
               style={{ fontFamily: "'Geist Mono', monospace" }}
           >
-            Authenticating request…
+            Authenticating & Fetching…
           </p>
         </div>
     );
@@ -219,34 +217,13 @@ function SecurePanel({
   if (error) {
     return (
         <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-8 text-center">
-          <div
-              className="w-10 h-10 rounded-full bg-rose-100 text-rose-500 flex items-center
-                        justify-center mx-auto mb-4 text-lg font-bold"
-          >
-            !
-          </div>
-          <p
-              className="font-semibold text-rose-800 mb-1 text-sm"
-              style={{ fontFamily: "'Geist', sans-serif" }}
-          >
-            Connection failed
-          </p>
-          <p
-              className="text-xs text-rose-600/80 max-w-sm mx-auto mb-5 leading-relaxed"
-              style={{ fontFamily: "'Geist', sans-serif" }}
-          >
-            {error}
-          </p>
+          <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-4 text-lg font-bold">!</div>
+          <p className="font-semibold text-rose-800 mb-1 text-sm">Connection failed</p>
+          <p className="text-xs text-rose-600/80 max-w-sm mx-auto mb-5 leading-relaxed">{error}</p>
           <button
               onClick={onRetry}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold
-                     bg-white border border-rose-200 text-rose-700 rounded-xl
-                     hover:bg-rose-50 transition-colors duration-200"
-              style={{ fontFamily: "'Geist', sans-serif" }}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-white border border-rose-200 text-rose-700 rounded-xl hover:bg-rose-50 transition-colors"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
             Retry
           </button>
         </div>
@@ -255,91 +232,79 @@ function SecurePanel({
 
   return (
       <div className="space-y-5">
-        {/* Main response card */}
-        <div className="relative rounded-2xl overflow-hidden border border-slate-100">
-          {/* Gradient top strip */}
-          <div className="h-0.5 w-full bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400" />
+        {/* Main Response Highlight */}
+        <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+          <div className="h-1 w-full bg-gradient-to-r from-indigo-400 via-violet-400 to-fuchsia-400" />
           <div className="p-7 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div>
               <p
                   className="text-[9px] font-mono font-semibold uppercase tracking-[0.25em] text-slate-400 mb-2"
                   style={{ fontFamily: "'Geist Mono', monospace" }}
               >
-                Decrypted response
+                FastAPI Response
               </p>
               <p
-                  className="text-xl font-semibold text-slate-900 leading-snug"
+                  className="text-2xl font-semibold text-slate-900 leading-snug"
                   style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: "italic" }}
               >
                 "{data?.message}"
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-emerald-500 text-white text-[10px] font-mono font-bold uppercase tracking-widest px-4 py-2 rounded-full whitespace-nowrap self-start sm:self-auto shadow-sm shadow-emerald-200">
+            <div className="flex items-center gap-2 bg-emerald-500 text-white text-[10px] font-mono font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-sm shadow-emerald-200">
               <LiveDot color="bg-white" />
-              Authorized
+              200 OK
             </div>
           </div>
         </div>
 
-        {/* Two detail cards */}
+        {/* Telemetry Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Verification checks */}
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6">
-            <p
-                className="text-[9px] font-mono font-semibold uppercase tracking-[0.2em] text-slate-400 mb-5"
-                style={{ fontFamily: "'Geist Mono', monospace" }}
-            >
-              Identity checks
-            </p>
-            <ul className="space-y-3.5">
-              {[
-                "JWT signature valid",
-                "Realm verified",
-                "Token not expired",
-                "CSRF token matched",
-              ].map((check) => (
-                  <li
-                      key={check}
-                      className="flex items-center gap-3 text-sm font-medium text-slate-700"
-                      style={{ fontFamily: "'Geist', sans-serif" }}
-                  >
-                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </span>
-                    {check}
-                  </li>
-              ))}
-            </ul>
-          </div>
 
-          {/* Session control */}
-          <div className="rounded-2xl bg-slate-900 p-6 flex flex-col justify-between gap-6">
+          {/* Server Telemetry (From Backend) */}
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-6 flex flex-col justify-between">
             <div>
               <p
-                  className="text-[9px] font-mono font-semibold uppercase tracking-[0.2em] text-slate-500 mb-4"
+                  className="text-[9px] font-mono font-semibold uppercase tracking-[0.2em] text-slate-400 mb-5"
                   style={{ fontFamily: "'Geist Mono', monospace" }}
               >
-                Session info
+                Backend Telemetry
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
+                {[
+                  { label: "Server Time", value: new Date(data?.server_time || "").toLocaleTimeString() },
+                  { label: "Environment", value: data?.environment },
+                  { label: "Request ID", value: data?.user_stats.request_id.split('-')[0] + "..." },
+                  { label: "Access Tier", value: data?.user_stats.access_tier },
+                ].map(({ label, value }) => (
+                    <div key={label} className="flex justify-between items-center pb-2 border-b border-slate-200/60 last:border-0">
+                      <span className="text-xs text-slate-500 font-medium">{label}</span>
+                      <span className="text-xs text-indigo-600 font-mono font-semibold bg-indigo-50 px-2 py-0.5 rounded">{value || "—"}</span>
+                    </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Keycloak Session */}
+          <div className="rounded-2xl bg-slate-900 p-6 flex flex-col justify-between shadow-xl shadow-slate-900/10">
+            <div>
+              <p
+                  className="text-[9px] font-mono font-semibold uppercase tracking-[0.2em] text-slate-500 mb-5"
+                  style={{ fontFamily: "'Geist Mono', monospace" }}
+              >
+                Local Identity (Keycloak)
+              </p>
+              <div className="space-y-3">
                 {[
                   { label: "User", value: keycloak.tokenParsed?.preferred_username ?? "—" },
-                  { label: "Realm", value: keycloak.realm ?? "—" },
-                  { label: "Client", value: keycloak.clientId ?? "—" },
+                  { label: "Email", value: keycloak.tokenParsed?.email ?? "—" },
+                  { label: "Client ID", value: keycloak.clientId ?? "—" },
                 ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between items-center">
-                  <span
-                      className="text-xs text-slate-500 font-mono"
-                      style={{ fontFamily: "'Geist Mono', monospace" }}
-                  >
+                  <span className="text-xs text-slate-400 font-mono" style={{ fontFamily: "'Geist Mono', monospace" }}>
                     {label}
                   </span>
-                      <span
-                          className="text-xs text-slate-300 font-mono truncate max-w-[140px] text-right"
-                          style={{ fontFamily: "'Geist Mono', monospace" }}
-                      >
+                      <span className="text-xs text-slate-200 font-mono truncate max-w-[140px] text-right" style={{ fontFamily: "'Geist Mono', monospace" }}>
                     {value}
                   </span>
                     </div>
@@ -350,18 +315,12 @@ function SecurePanel({
             {/* Logout */}
             <button
                 onClick={() => keycloak.logout()}
-                className="group flex items-center justify-between w-full bg-white/5 hover:bg-white
-                       text-white hover:text-slate-900 px-5 py-3.5 rounded-xl font-semibold
-                       text-sm transition-all duration-250 border border-white/10 hover:border-white"
-                style={{ fontFamily: "'Geist', sans-serif" }}
+                className="mt-6 group flex items-center justify-between w-full bg-white/5 hover:bg-rose-500
+                       text-white hover:text-white px-5 py-3 rounded-xl font-semibold
+                       text-sm transition-all duration-300 border border-white/10 hover:border-rose-500"
             >
-              Sign out
-              <svg
-                  className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-              >
+              Terminate Session
+              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </button>
@@ -373,7 +332,7 @@ function SecurePanel({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const WelcomePage: React.FC = () => {
+const WelcomePage: React.FC = () => {
   const api = useApi();
   const [secureData, setSecureData] = useState<SecurePayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -388,6 +347,10 @@ export const WelcomePage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+
+      // We simulate a slight network delay so the nice loading spinner shows up
+      await new Promise(resolve => setTimeout(resolve, 600));
+
       const { data } = await api.get<SecurePayload>("/secure");
       setSecureData(data);
     } catch (err) {
@@ -406,70 +369,51 @@ export const WelcomePage: React.FC = () => {
 
   return (
       <div
-          className="min-h-screen bg-[#fafafa] text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900"
+          className="min-h-screen bg-[#fafafa] text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 relative overflow-hidden"
           style={{ fontFamily: "'Geist', sans-serif" }}
       >
-        {/* ── Ambient background ── */}
-        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-          <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-indigo-100/50 blur-[100px]" />
-          <div className="absolute top-1/2 -right-40 w-[400px] h-[400px] rounded-full bg-violet-100/40 blur-[120px]" />
-          <div className="absolute -bottom-20 left-1/3 w-[350px] h-[350px] rounded-full bg-sky-100/30 blur-[100px]" />
+        {/* ✨ UPDATED: Ambient background with breathing animations */}
+        <div className="fixed inset-0 pointer-events-none -z-10">
+          <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-indigo-200/40 blur-[120px] animate-[pulse_8s_ease-in-out_infinite]" />
+          <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-violet-200/30 blur-[120px] animate-[pulse_10s_ease-in-out_infinite_delay-2s]" />
+          <div className="absolute -bottom-20 left-1/3 w-[400px] h-[400px] rounded-full bg-sky-200/30 blur-[100px] animate-[pulse_9s_ease-in-out_infinite_delay-4s]" />
           {/* Subtle dot grid */}
           <div
-              className="absolute inset-0 opacity-[0.4]"
+              className="absolute inset-0 opacity-[0.3]"
               style={{
                 backgroundImage: "radial-gradient(circle, #cbd5e1 1px, transparent 1px)",
-                backgroundSize: "28px 28px",
+                backgroundSize: "32px 32px",
               }}
           />
         </div>
 
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-12 lg:py-20">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-12 lg:py-20 relative z-10">
 
           {/* ── Navbar ── */}
           <Reveal>
             <nav className="flex items-center justify-between mb-20">
-              {/* Left — logo + name */}
               <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm shadow-lg shadow-indigo-200">
                   ✦
                 </div>
-                <span
-                    className="font-semibold text-[15px] text-slate-800 tracking-tight"
-                    style={{ fontFamily: "'Geist', sans-serif" }}
-                >
+                <span className="font-semibold text-[16px] text-slate-800 tracking-tight">
                 Demo Portal
               </span>
 
-                {/* Vite + React inline logos */}
-                <div className="flex items-center gap-2 ml-2 pl-3 border-l border-slate-200">
+                <div className="flex items-center gap-2 ml-3 pl-4 border-l-2 border-slate-200/80">
                   <a href="https://vite.dev" target="_blank" rel="noreferrer" className="group">
-                    <img
-                        src="/vite.svg"
-                        alt="Vite"
-                        className="h-7 w-7 group-hover:drop-shadow-[0_0_8px_rgba(100,108,255,0.7)] transition-all duration-300"
-                    />
+                    <img src="/vite.svg" alt="Vite" className="h-6 w-6 group-hover:drop-shadow-[0_0_8px_rgba(100,108,255,0.7)] transition-all" />
                   </a>
                   <a href="https://react.dev" target="_blank" rel="noreferrer" className="group">
-                    <img
-                        src="/react.svg"
-                        alt="React"
-                        className="h-7 w-7 group-hover:drop-shadow-[0_0_8px_rgba(97,218,251,0.7)] transition-all duration-300 animate-[spin_22s_linear_infinite]"
-                    />
+                    <img src="/react.svg" alt="React" className="h-6 w-6 group-hover:drop-shadow-[0_0_8px_rgba(97,218,251,0.7)] transition-all animate-[spin_20s_linear_infinite]" />
                   </a>
                 </div>
               </div>
 
-              {/* Right — status */}
               <div className="flex items-center gap-3">
-                <div
-                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full
-                              border border-emerald-200 bg-emerald-50/80 text-emerald-700
-                              text-[11px] font-semibold"
-                    style={{ fontFamily: "'Geist Mono', monospace" }}
-                >
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-200 bg-emerald-50/80 text-emerald-700 text-[11px] font-semibold tracking-wide shadow-sm shadow-emerald-100">
                   <LiveDot />
-                  Keycloak
+                  Protected Session
                 </div>
               </div>
             </nav>
@@ -477,33 +421,24 @@ export const WelcomePage: React.FC = () => {
 
           {/* ── Hero ── */}
           <section className="mb-24">
-            {/* Greeting */}
             <Reveal delay={160}>
               <h1
                   className="text-[clamp(2.8rem,6vw,5.5rem)] font-semibold leading-[1.08] tracking-[-0.03em] mb-5"
                   style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
               >
                 Welcome back,{" "}
-                <span
-                    className="italic text-transparent bg-clip-text bg-gradient-to-r
-                             from-indigo-500 via-violet-500 to-fuchsia-500"
-                >
+                <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 pr-2">
                 {firstName}.
               </span>
               </h1>
             </Reveal>
 
             <Reveal delay={260}>
-              <p
-                  className="text-[17px] text-slate-500 max-w-xl leading-[1.7] font-normal mb-8"
-                  style={{ fontFamily: "'Geist', sans-serif" }}
-              >
-                Your authentication is verified and your session is live. This page
-                confirms end-to-end connectivity between React, Keycloak, and FastAPI.
+              <p className="text-[17px] text-slate-500 max-w-xl leading-[1.7] font-normal mb-8">
+                Your authentication is verified and your session is live. This page confirms end-to-end connectivity between React, Keycloak, and FastAPI.
               </p>
             </Reveal>
 
-            {/* Quick stats row */}
             <Reveal delay={340}>
               <div className="flex flex-wrap items-center gap-3">
                 {[
@@ -511,22 +446,12 @@ export const WelcomePage: React.FC = () => {
                   { label: "API", value: "FastAPI / Python" },
                   { label: "Build", value: "Vite + TS" },
                 ].map(({ label, value }) => (
-                    <div
-                        key={label}
-                        className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl
-                             border border-slate-100 shadow-sm text-sm"
-                    >
-                  <span
-                      className="text-[10px] font-mono font-semibold text-slate-400 uppercase tracking-wider"
-                      style={{ fontFamily: "'Geist Mono', monospace" }}
-                  >
+                    <div key={label} className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-md rounded-xl border border-slate-200 shadow-sm text-sm">
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
                     {label}
                   </span>
-                      <span className="w-px h-3 bg-slate-200" />
-                      <span
-                          className="text-slate-700 font-medium text-xs"
-                          style={{ fontFamily: "'Geist', sans-serif" }}
-                      >
+                      <span className="w-px h-3 bg-slate-300" />
+                      <span className="text-slate-700 font-semibold text-xs">
                     {value}
                   </span>
                     </div>
@@ -540,7 +465,7 @@ export const WelcomePage: React.FC = () => {
             <Reveal delay={200}>
               <Eyebrow>Core Stack</Eyebrow>
               <h2
-                  className="text-2xl font-semibold tracking-tight text-slate-900 mb-8"
+                  className="text-3xl font-semibold tracking-tight text-slate-900 mb-8"
                   style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
               >
                 Built with intention.
@@ -561,25 +486,23 @@ export const WelcomePage: React.FC = () => {
                 <div>
                   <Eyebrow>Protected Endpoint</Eyebrow>
                   <h2
-                      className="text-2xl font-semibold tracking-tight text-slate-900"
+                      className="text-3xl font-semibold tracking-tight text-slate-900"
                       style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
                   >
-                    Secure backend data.
+                    Secure payload.
                   </h2>
                 </div>
 
-                {/* Status badge */}
                 <div
                     className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px]
-                              font-mono font-semibold border transition-all duration-500
+                              font-mono font-semibold border transition-all duration-500 shadow-sm
                               ${
                         loading
-                            ? "bg-amber-50 border-amber-200 text-amber-700"
+                            ? "bg-amber-50 border-amber-200 text-amber-700 shadow-amber-100"
                             : error
-                                ? "bg-rose-50 border-rose-200 text-rose-700"
-                                : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                ? "bg-rose-50 border-rose-200 text-rose-700 shadow-rose-100"
+                                : "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-emerald-100"
                     }`}
-                    style={{ fontFamily: "'Geist Mono', monospace" }}
                 >
                   {loading ? (
                       <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
@@ -588,39 +511,26 @@ export const WelcomePage: React.FC = () => {
                   ) : (
                       <LiveDot color="bg-emerald-400" />
                   )}
-                  {loading ? "Fetching…" : error ? "Error" : "200 OK"}
+                  {loading ? "Fetching…" : error ? "Error" : "Connected"}
                 </div>
               </div>
             </Reveal>
 
-            {/* Panel */}
             <Reveal delay={280}>
-              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                {/* Panel header bar */}
-                <div
-                    className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 bg-slate-50/70"
-                >
-                  {/* macOS dots */}
+              <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/80">
                   <div className="flex gap-1.5">
                     {["bg-rose-400", "bg-amber-400", "bg-emerald-400"].map((c, i) => (
                         <div key={i} className={`w-2.5 h-2.5 rounded-full ${c}`} />
                     ))}
                   </div>
-                  <span
-                      className="text-[10px] font-mono font-medium text-slate-400"
-                      style={{ fontFamily: "'Geist Mono', monospace" }}
-                  >
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase">
                   GET /secure
                 </span>
-                  <span
-                      className="text-[10px] font-mono font-medium text-slate-400"
-                      style={{ fontFamily: "'Geist Mono', monospace" }}
-                  >
-                  axios · bearer token
+                  <span className="text-[10px] font-mono font-medium text-slate-400">
+                  axios · bearer
                 </span>
                 </div>
-
-                {/* Content */}
                 <div className="p-6 sm:p-8">
                   <SecurePanel
                       loading={loading}
@@ -635,18 +545,12 @@ export const WelcomePage: React.FC = () => {
 
           {/* ── Footer ── */}
           <Reveal delay={100}>
-            <footer className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p
-                  className="text-xs text-slate-400 font-medium"
-                  style={{ fontFamily: "'Geist', sans-serif" }}
-              >
+            <footer className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-xs text-slate-400 font-medium">
                 © {new Date().getFullYear()} Demo Portal
               </p>
-              <p
-                  className="text-[10px] font-mono text-slate-300"
-                  style={{ fontFamily: "'Geist Mono', monospace" }}
-              >
-                React + Vite + Keycloak + FastAPI
+              <p className="text-[10px] font-mono text-slate-300 font-semibold tracking-wider">
+                REACT + VITE + KEYCLOAK + FASTAPI
               </p>
             </footer>
           </Reveal>

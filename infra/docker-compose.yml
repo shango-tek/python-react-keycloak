@@ -1,0 +1,68 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: keycloak_postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - keycloak_net
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    networks:
+      - keycloak_net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    command: start-dev
+    environment:
+      # Database
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak123
+
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+
+      # Mail server
+      KC_SMTP_HOST: mailpit
+      KC_SMTP_PORT: 1025
+      KC_SMTP_FROM: noreply@keycloak.com
+      KC_SMTP_AUTH: "false"
+      KC_SMTP_STARTTLS: "false"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - mailpit
+    networks:
+      - keycloak_net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - keycloak_net
+
+volumes:
+  postgres_data:
+  ollama_data:
+
+networks:
+  keycloak_net:

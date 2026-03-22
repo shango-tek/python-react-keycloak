@@ -5,15 +5,15 @@ from fastapi.security import OAuth2PasswordBearer
 from keycloak.keycloak_openid import KeycloakOpenID
 from starlette import status
 
-from config import settings
-from schemas import UserPayload
+from app.core.config import settings
+from app.schemas import UserPayload
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.token_url)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.keycloak_token_url)
 
 keycloak_openid = KeycloakOpenID(
-    client_id=settings.client_id,
-    realm_name=settings.realm_name,
-    server_url=settings.server_url,
+    client_id=settings.KC_CLIENT_ID,
+    realm_name=settings.KC_REALM_NAME,
+    server_url=settings.KC_SERVER_URL,
     verify=True,
 )
 

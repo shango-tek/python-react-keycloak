@@ -1,1 +1,0 @@
-from config.keycloak_config import settings

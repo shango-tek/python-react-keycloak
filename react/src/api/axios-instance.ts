@@ -3,7 +3,7 @@ import keycloak from "../auth/keycloak.ts";
 
 
 const api = axios.create({
-    baseURL: process.env.VITE_API_URL,
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
 })
 
