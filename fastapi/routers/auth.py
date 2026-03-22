@@ -28,14 +28,15 @@ def get_public_key() -> str:
 
 
 async def get_payload(token: str = Security(oauth2_scheme)) -> dict:
-    print(f"TOKEN: {token[:50]}...")   # ← ersten 50 Zeichen loggen
-    print(f"KEY: {get_public_key()}")  # ← Public Key loggen
     try:
+        # Many issues arise from passing 'key' manually as it skips some jwcrypto logic.
+        # Letting KeycloakOpenID fetch its own certs is more reliable.
         return keycloak_openid.decode_token(
             token,
-            key=get_public_key(),
+            # If audience check fails, you may need to add audience=settings.client_id
         )
     except Exception as e:
+        print(f"Token validation failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),
@@ -45,8 +46,11 @@ async def get_payload(token: str = Security(oauth2_scheme)) -> dict:
 
 async def get_user_info(payload: dict = Depends(get_payload)) -> UserPayload:
     try:
+        # Add original payload to UserPayload if needed for debugging or raw access
         return UserPayload(**payload)
     except Exception as e:
+        print(f"UserPayload validation error: {str(e)}")
+        print(f"Payload was: {payload}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),

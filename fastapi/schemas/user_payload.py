@@ -8,13 +8,16 @@ class RealmAccess(BaseModel):
 
 
 class UserPayload(BaseModel):
-    sub: str
-    preferred_username: str
+    sub: Optional[str] = None
+    preferred_username: Optional[str] = None
     email: Optional[str] = None
     given_name: Optional[str] = None
     family_name: Optional[str] = None
     realm_access: Optional[RealmAccess] = None
     resource_access: Optional[dict] = None
+
+    class Config:
+        extra = "ignore"
 
     # Convenience properties
     @property
