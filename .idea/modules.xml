@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/fastapi/fastapi.iml" filepath="$PROJECT_DIR$/fastapi/fastapi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/python-react-keycloak.iml" filepath="$PROJECT_DIR$/python-react-keycloak.iml" />
+      <module fileurl="file://$PROJECT_DIR$/react/react.iml" filepath="$PROJECT_DIR$/react/react.iml" />
+    </modules>
+  </component>
+</project>
