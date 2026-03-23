@@ -16,10 +16,9 @@ class UserPayload(BaseModel):
     realm_access: Optional[RealmAccess] = None
     resource_access: Optional[dict] = None
 
-    class Config:
-        extra = "ignore"
+    # Pydantic v2: use model_config instead of inner class Config
+    model_config = {"extra": "ignore"}
 
-    # Convenience properties
     @property
     def realm_roles(self) -> list[str]:
         return self.realm_access.roles if self.realm_access else []

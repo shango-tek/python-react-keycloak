@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .gitattributes
+#
+# Enforce LF line endings for files that run inside Linux containers or are
+# interpreted by bash.  Without this, Git on Windows may convert LF → CRLF,
+# causing "bad interpreter: /bin/bash^M" errors at runtime.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Shell scripts — always LF, never CRLF
+*.sh        text eol=lf
+
+# Makefile — tabs are significant; keep LF to avoid silent breakage
+Makefile    text eol=lf
+
+# Docker-related files — run in Linux, must stay LF
+Dockerfile          text eol=lf
+.dockerignore       text eol=lf
+docker-compose.yml  text eol=lf
+docker-compose*.yml text eol=lf
+
+# Python source — LF is the standard; avoids mixed-ending issues on Windows
+*.py    text eol=lf
+
+# Config / data files
+*.env       text eol=lf
+*.json      text eol=lf
+*.toml      text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.conf      text eol=lf
+*.ini       text eol=lf
+*.cfg       text eol=lf
+
+# Web source — LF
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.jsx       text eol=lf
+*.css       text eol=lf
+*.html      text eol=lf
+
+# Documentation
+*.md        text eol=lf
+
+# Binary files — no line-ending conversion
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.svg       binary
+*.ico       binary
+*.woff      binary
+*.woff2     binary
+*.ttf       binary
+*.eot       binary
+*.zip       binary
+*.tar.gz    binary

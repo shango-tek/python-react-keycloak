@@ -1,0 +1,32 @@
+# ─── Python bytecode ──────────────────────────────────────────────────────────
+# pip installs from requirements.txt inside the image — the local venv is not
+# needed and weighs ~100 MB.
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ─── Environment / secrets ────────────────────────────────────────────────────
+# Runtime env vars are injected by docker-compose env_file — the .env file
+# must NOT be baked into the image layer.
+.env
+.env.*
+
+# ─── Dev / IDE artefacts ──────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# ─── Git ──────────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+
+# ─── Dev-only scripts & docs ─────────────────────────────────────────────────
+# seed_db.py should be run manually, not shipped inside the container.
+seed_db.py
+test_*.http
+*.md
+tests/
+.pytest_cache/

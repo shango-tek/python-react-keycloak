@@ -1,0 +1,42 @@
+{
+  "realm": "react-demo",
+  "enabled": true,
+  "users": [
+    {
+      "username": "react",
+      "enabled": true,
+      "email": "react@example.com",
+      "firstName": "React",
+      "lastName": "Keycloak",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "react",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "clientRoles": {
+        "react-keycloak": ["user"]
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "user"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "react-keycloak",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "webOrigins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+      "redirectUris": ["http://localhost:5173/*", "http://127.0.0.1:5173/*"],
+      "defaultRoles": ["user"]
+    }
+  ]
+}

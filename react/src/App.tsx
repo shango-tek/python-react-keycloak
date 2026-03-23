@@ -2,10 +2,7 @@ import './App.css'
 import WelcomePage from "./pages/WelcomePage.tsx";
 
 function App() {
-
-    return (
-        <WelcomePage></WelcomePage>
-    )
+  return <WelcomePage />;
 }
 
 export default App
