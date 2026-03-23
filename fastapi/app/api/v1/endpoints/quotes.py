@@ -24,14 +24,21 @@ async def get_daily_quote() -> dict:
         503 — Ollama service is not reachable or the model is not yet pulled.
         500 — Any other unexpected error.
     """
+    import random
+    themes = ["happiness", "wisdom", "courage", "resilience", "kindness", "gratitude", "perseverance"]
+    selected_theme = random.choice(themes)
+
     payload = {
         "model": settings.OLLAMA_MODEL,
         "prompt": (
-            "Give me a short, inspiring quote about happiness. "
+            f"Provide a short, inspiring and unique quote about {selected_theme}. "
             "Return ONLY the quote text and the author in this exact format: "
             "'Quote' - Author"
         ),
         "stream": False,
+        "options": {
+            "temperature": 1.0,
+        }
     }
 
     async with httpx.AsyncClient() as client:
@@ -73,7 +80,7 @@ async def get_daily_quote() -> dict:
         return {
             "quote": parts[0].strip("'\" "),
             "author": parts[1].strip(),
-            "category": "happiness",
+            "category": selected_theme,
         }
 
-    return {"quote": quote_text, "author": "Unknown", "category": "happiness"}
+    return {"quote": quote_text, "author": "Unknown", "category": selected_theme}

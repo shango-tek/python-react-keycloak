@@ -8,7 +8,7 @@ COMPOSE       := docker compose -f infra/docker-compose.yml
 FASTAPI_CTR   := fastapi
 OLLAMA_CTR    := ollama
 REACT_DIR     := react
-OLLAMA_MODEL  := llama3.2:1b
+OLLAMA_MODEL  := llama3.2:3b
 
 # Terminal colours (no-op on terminals that don't support ANSI)
 BOLD  := \033[1m

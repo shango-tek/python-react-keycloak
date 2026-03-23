@@ -10,7 +10,6 @@
 # Model files live in the ollama_data Docker volume, so on subsequent starts
 # the model is already present and the pull is skipped instantly.
 # ─────────────────────────────────────────────────────────────────────────────
-
 # -e  : exit on unhandled errors
 # No -u / no pipefail: grep returns 1 when there is no match, which is normal
 # and should NOT be treated as a fatal error.

@@ -25,7 +25,7 @@ $COMPOSE     = "docker compose -f infra/docker-compose.yml"
 $FASTAPI_CTR = "fastapi"
 $OLLAMA_CTR  = "ollama"
 $REACT_DIR   = "react"
-$OLLAMA_MODEL = "llama3.2:1b"
+$OLLAMA_MODEL = "llama3.2:3b"
 
 function Invoke-Compose { param([string]$Args) Invoke-Expression "$COMPOSE $Args" }
 

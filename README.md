@@ -12,7 +12,7 @@ A full-stack demo application combining **React 19**, **FastAPI**, **Keycloak**,
 | Auth | Keycloak 26 (PKCE S256 OIDC flow) |
 | Backend | FastAPI, Python 3.13, SQLAlchemy 2 (async) |
 | Database | PostgreSQL 17 (two databases: `keycloak` + `app_data`) |
-| LLM | Ollama (`llama3.2:1b`) — translation, explanation, chat |
+| LLM | Ollama (`llama3.2:3b`) — translation, explanation, chat |
 | Reverse proxy | Nginx (production React SPA serving) |
 | Orchestration | Docker Compose |
 
@@ -74,7 +74,7 @@ KC_REALM_NAME=demo
 KC_CLIENT_ID=react-client
 
 OLLAMA_URL=http://ollama:11434
-OLLAMA_MODEL=llama3.2:1b
+OLLAMA_MODEL=llama3.2:3b
 ```
 
 ### 2 — Start all containers
@@ -85,7 +85,7 @@ make up
 
 On **first boot** everything is automatic:
 
-- **Ollama** — starts the server, detects the model is missing, pulls `llama3.2:1b` (~900 MB, takes a minute or two). The model is stored in the `ollama_data` volume, so subsequent starts skip the download and are instant.
+- **Ollama** — starts the server, detects the model is missing, pulls `llama3.2:3b` (~2.0 GB, takes a few minutes). The model is stored in the `ollama_data` volume, so subsequent starts skip the download and are instant.
 - **FastAPI** — waits for Ollama's healthcheck to pass (model present), then creates the `books` table and seeds the 20-book catalogue before accepting requests.
 
 No manual steps required. Watch progress with `make logs`.
